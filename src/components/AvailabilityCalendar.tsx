@@ -7,7 +7,9 @@ interface CalendarDay {
   isCurrentMonth: boolean
   isToday: boolean
   isAvailable: boolean
-  hasBooking: boolean
+  isPartiallyBooked: boolean
+  isFullyBooked: boolean
+  bookingTimes: string[]
 }
 
 interface BookingData {
@@ -20,7 +22,7 @@ interface BookingData {
 export default function AvailabilityCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  const [bookedDates, setBookedDates] = useState<Date[]>([])
+  const [bookingsData, setBookingsData] = useState<BookingData[]>([])
   const [loading, setLoading] = useState(true)
 
   // Fetch bookings from API
@@ -30,19 +32,12 @@ export default function AvailabilityCalendar() {
         const response = await fetch('/api/bookings')
         if (response.ok) {
           const data = await response.json()
-          const bookingDates = data.bookings.map((booking: BookingData) => 
-            new Date(booking.event_date)
-          )
-          setBookedDates(bookingDates)
+          setBookingsData(data.bookings || [])
         }
       } catch (error) {
         console.error('Error fetching bookings:', error)
-        // Fallback to mock data if API fails
-        setBookedDates([
-          new Date(2025, 8, 15),
-          new Date(2025, 8, 22),
-          new Date(2025, 8, 29),
-        ])
+        // Fallback to empty array if API fails
+        setBookingsData([])
       } finally {
         setLoading(false)
       }
@@ -51,10 +46,9 @@ export default function AvailabilityCalendar() {
     fetchBookings()
   }, [])
 
-  const isDateBooked = (date: Date) => {
-    return bookedDates.some(bookedDate => 
-      bookedDate.toDateString() === date.toDateString()
-    )
+  const getBookingsForDate = (date: Date) => {
+    const dateString = date.toISOString().split('T')[0]
+    return bookingsData.filter(booking => booking.event_date === dateString)
   }
 
   const isDateInPast = (date: Date) => {
@@ -82,7 +76,9 @@ export default function AvailabilityCalendar() {
         isCurrentMonth: false,
         isToday: false,
         isAvailable: false,
-        hasBooking: false
+        isPartiallyBooked: false,
+        isFullyBooked: false,
+        bookingTimes: []
       })
     }
     
@@ -92,12 +88,22 @@ export default function AvailabilityCalendar() {
       const today = new Date()
       today.setHours(0, 0, 0, 0)
       
+      const dayBookings = getBookingsForDate(date)
+      const bookingTimes = dayBookings.map(b => `${b.start_time}-${b.end_time}`)
+      const isInPast = isDateInPast(date)
+      
+      // A day is fully booked if it has bookings covering the entire day (simplified logic)
+      const isFullyBooked = dayBookings.length >= 3 // Assuming max 3 slots per day
+      const isPartiallyBooked = dayBookings.length > 0 && !isFullyBooked
+      
       days.push({
         date,
         isCurrentMonth: true,
         isToday: date.toDateString() === today.toDateString(),
-        isAvailable: !isDateBooked(date) && !isDateInPast(date),
-        hasBooking: isDateBooked(date)
+        isAvailable: !isInPast && !isFullyBooked,
+        isPartiallyBooked,
+        isFullyBooked,
+        bookingTimes
       })
     }
     
@@ -110,7 +116,9 @@ export default function AvailabilityCalendar() {
         isCurrentMonth: false,
         isToday: false,
         isAvailable: false,
-        hasBooking: false
+        isPartiallyBooked: false,
+        isFullyBooked: false,
+        bookingTimes: []
       })
     }
     
@@ -204,7 +212,8 @@ export default function AvailabilityCalendar() {
                 }
                 ${day.isToday ? 'bg-blue-100 text-blue-900 font-semibold' : ''}
                 ${isSelected ? 'bg-primary-600 text-white hover:bg-primary-700' : ''}
-                ${day.hasBooking ? 'bg-red-100 text-red-900' : ''}
+                ${day.isFullyBooked ? 'bg-red-100 text-red-900' : ''}
+                ${day.isPartiallyBooked ? 'bg-yellow-100 text-yellow-900' : ''}
               `}
             >
               {day.date.getDate()}
@@ -213,7 +222,7 @@ export default function AvailabilityCalendar() {
               {day.isCurrentMonth && (
                 <div className={`
                   absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 rounded-full
-                  ${day.isAvailable ? 'bg-green-500' : day.hasBooking ? 'bg-red-500' : 'bg-gray-300'}
+                  ${day.isAvailable ? 'bg-green-500' : day.isFullyBooked ? 'bg-red-500' : day.isPartiallyBooked ? 'bg-yellow-500' : 'bg-gray-300'}
                 `} />
               )}
             </button>
@@ -229,7 +238,11 @@ export default function AvailabilityCalendar() {
         </div>
         <div className="flex items-center">
           <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-          <span className="text-gray-600">Booked</span>
+          <span className="text-gray-600">Fully Booked</span>
+        </div>
+        <div className="flex items-center">
+          <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+          <span className="text-gray-600">Partially Booked</span>
         </div>
         <div className="flex items-center">
           <div className="w-3 h-3 bg-gray-300 rounded-full mr-2"></div>
@@ -248,9 +261,28 @@ export default function AvailabilityCalendar() {
               day: 'numeric' 
             })}
           </p>
-          <p className="text-sm text-primary-700 mt-1">
-            This date is available for booking. Please fill out the booking form to reserve.
-          </p>
+          {(() => {
+            const dayBookings = getBookingsForDate(selectedDate)
+            if (dayBookings.length > 0) {
+              return (
+                <div className="text-sm text-primary-700 mt-1">
+                  <p>Existing bookings:</p>
+                  <ul className="list-disc list-inside mt-1">
+                    {dayBookings.map((booking, index) => (
+                      <li key={index}>{booking.start_time} - {booking.end_time}</li>
+                    ))}
+                  </ul>
+                  <p className="mt-1">You can still book if your time doesn't conflict with existing bookings.</p>
+                </div>
+              )
+            } else {
+              return (
+                <p className="text-sm text-primary-700 mt-1">
+                  This date is available for booking. Please fill out the booking form to reserve.
+                </p>
+              )
+            }
+          })()}
         </div>
       )}
         </>

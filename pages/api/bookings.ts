@@ -60,15 +60,32 @@ export default async function handler(
         return res.status(500).json({ error: 'Error checking availability' })
       }
 
+      // Check for time conflicts
       if (existingBookings && existingBookings.length > 0) {
-        return res.status(409).json({ 
-          error: 'Date is already booked or pending confirmation',
-          conflictingBookings: existingBookings.map(b => ({
-            date: b.event_date,
-            time: `${b.start_time}-${b.end_time}`,
-            status: b.status
-          }))
+        const newStartTime = booking.start_time
+        const newEndTime = booking.end_time
+        
+        const conflictingBookings = existingBookings.filter(existing => {
+          const existingStart = existing.start_time
+          const existingEnd = existing.end_time
+          
+          // Check if times overlap
+          // Overlap occurs if: new start < existing end AND new end > existing start
+          return (newStartTime < existingEnd && newEndTime > existingStart)
         })
+        
+        if (conflictingBookings.length > 0) {
+          return res.status(409).json({ 
+            error: 'Time slot conflicts with existing booking',
+            conflictingBookings: conflictingBookings.map(b => ({
+              date: b.event_date,
+              time: `${b.start_time}-${b.end_time}`,
+              status: b.status,
+              name: b.name
+            })),
+            requestedTime: `${newStartTime}-${newEndTime}`
+          })
+        }
       }
 
       // Insert the booking into Supabase
