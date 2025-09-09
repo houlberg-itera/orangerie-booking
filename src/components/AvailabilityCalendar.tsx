@@ -27,7 +27,7 @@ export default function AvailabilityCalendar() {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const response = await fetch('/api/bookings-simple')
+        const response = await fetch('/api/bookings')
         if (response.ok) {
           const data = await response.json()
           const bookingDates = data.bookings.map((booking: BookingData) => 

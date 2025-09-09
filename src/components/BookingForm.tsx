@@ -57,7 +57,7 @@ export default function BookingForm() {
         message: formData.message
       }
 
-      const response = await fetch('/api/bookings-simple', {
+      const response = await fetch('/api/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
