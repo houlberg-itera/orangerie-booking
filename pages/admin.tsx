@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
+import { useContent } from '../lib/useContent'
 
 interface Booking {
   id: number
@@ -20,6 +21,10 @@ export default function AdminPage() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [activeTab, setActiveTab] = useState<'bookings' | 'content'>('bookings')
+  const { content, updateContent, refetch } = useContent()
+  const [editingContent, setEditingContent] = useState<{ [key: string]: string }>({})
+  const [contentSaving, setContentSaving] = useState<{ [key: string]: boolean }>({})
 
   useEffect(() => {
     fetchBookings()
@@ -105,6 +110,38 @@ export default function AdminPage() {
     }
   }
 
+  const handleContentEdit = (key: string, value: string) => {
+    setEditingContent(prev => ({ ...prev, [key]: value }))
+  }
+
+  const saveContent = async (key: string) => {
+    const value = editingContent[key]
+    if (value === undefined) return
+
+    setContentSaving(prev => ({ ...prev, [key]: true }))
+    
+    const success = await updateContent(key, value)
+    if (success) {
+      setEditingContent(prev => {
+        const newState = { ...prev }
+        delete newState[key]
+        return newState
+      })
+    } else {
+      setError('Failed to update content')
+    }
+    
+    setContentSaving(prev => ({ ...prev, [key]: false }))
+  }
+
+  const cancelContentEdit = (key: string) => {
+    setEditingContent(prev => {
+      const newState = { ...prev }
+      delete newState[key]
+      return newState
+    })
+  }
+
   return (
     <>
       <Head>
@@ -130,17 +167,60 @@ export default function AdminPage() {
 
         <main className="min-h-screen bg-gray-50 py-8">
           <div className="container max-w-7xl mx-auto">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                Recent Bookings
-              </h2>
+            {/* Tab Navigation */}
+            <div className="mb-6">
+              <div className="border-b border-gray-200">
+                <nav className="-mb-px flex space-x-8">
+                  <button
+                    onClick={() => setActiveTab('bookings')}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                      activeTab === 'bookings'
+                        ? 'border-primary-500 text-primary-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    Bookings Management
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('content')}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                      activeTab === 'content'
+                        ? 'border-primary-500 text-primary-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    Content Management
+                  </button>
+                </nav>
+              </div>
+            </div>
 
-              {loading && (
-                <div className="text-center py-8">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-                  <p className="mt-2 text-gray-600">Loading bookings...</p>
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+                <div className="flex">
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-red-800">
+                      {error}
+                    </h3>
+                  </div>
                 </div>
-              )}
+              </div>
+            )}
+
+            {/* Bookings Tab */}
+            {activeTab === 'bookings' && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                  Recent Bookings
+                </h2>
+
+                {loading && (
+                  <div className="text-center py-8">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                    <p className="mt-2 text-gray-600">Loading bookings...</p>
+                  </div>
+                )}
 
               {error && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
@@ -303,37 +383,232 @@ export default function AdminPage() {
                   </table>
                 </div>
               )}
-            </div>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-medium text-gray-900">Total Bookings</h3>
-                <p className="text-3xl font-bold text-primary-600 mt-2">
-                  {bookings.length}
-                </p>
+                {/* Quick Stats for Bookings */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-medium text-gray-900">Total Bookings</h3>
+                    <p className="text-3xl font-bold text-primary-600 mt-2">
+                      {bookings.length}
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-medium text-gray-900">Pending</h3>
+                    <p className="text-3xl font-bold text-yellow-600 mt-2">
+                      {bookings.filter(b => b.status === 'pending').length}
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-medium text-gray-900">Confirmed</h3>
+                    <p className="text-3xl font-bold text-green-600 mt-2">
+                      {bookings.filter(b => b.status === 'confirmed').length}
+                    </p>
+                  </div>
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-medium text-gray-900">This Month</h3>
+                    <p className="text-3xl font-bold text-blue-600 mt-2">
+                      {bookings.filter(b => 
+                        new Date(b.event_date).getMonth() === new Date().getMonth()
+                      ).length}
+                    </p>
+                  </div>
+                </div>
               </div>
+            )}
+
+            {/* Content Management Tab */}
+            {activeTab === 'content' && (
               <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-medium text-gray-900">Pending</h3>
-                <p className="text-3xl font-bold text-yellow-600 mt-2">
-                  {bookings.filter(b => b.status === 'pending').length}
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                  Content Management
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  Edit the text content that appears on your homepage. Changes will be visible immediately after saving.
                 </p>
+
+                <div className="space-y-6">
+                  {/* Hero Section */}
+                  <div className="border-b border-gray-200 pb-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Hero Section</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Main Title
+                        </label>
+                        {editingContent.hero_title !== undefined ? (
+                          <div className="flex space-x-2">
+                            <input
+                              type="text"
+                              value={editingContent.hero_title}
+                              onChange={(e) => handleContentEdit('hero_title', e.target.value)}
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                            />
+                            <button
+                              onClick={() => saveContent('hero_title')}
+                              disabled={contentSaving.hero_title}
+                              className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50"
+                            >
+                              {contentSaving.hero_title ? 'Saving...' : 'Save'}
+                            </button>
+                            <button
+                              onClick={() => cancelContentEdit('hero_title')}
+                              className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                            <span className="text-gray-900">{content.hero_title}</span>
+                            <button
+                              onClick={() => handleContentEdit('hero_title', content.hero_title)}
+                              className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Subtitle
+                        </label>
+                        {editingContent.hero_subtitle !== undefined ? (
+                          <div className="flex space-x-2">
+                            <textarea
+                              value={editingContent.hero_subtitle}
+                              onChange={(e) => handleContentEdit('hero_subtitle', e.target.value)}
+                              rows={3}
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                            />
+                            <div className="flex flex-col space-y-2">
+                              <button
+                                onClick={() => saveContent('hero_subtitle')}
+                                disabled={contentSaving.hero_subtitle}
+                                className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50"
+                              >
+                                {contentSaving.hero_subtitle ? 'Saving...' : 'Save'}
+                              </button>
+                              <button
+                                onClick={() => cancelContentEdit('hero_subtitle')}
+                                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-start justify-between p-3 bg-gray-50 rounded-md">
+                            <span className="text-gray-900">{content.hero_subtitle}</span>
+                            <button
+                              onClick={() => handleContentEdit('hero_subtitle', content.hero_subtitle)}
+                              className="text-primary-600 hover:text-primary-700 text-sm font-medium ml-4"
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Features Section */}
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Features Section</h3>
+                    <div className="grid md:grid-cols-3 gap-6">
+                      {[1, 2, 3].map((num) => (
+                        <div key={num} className="space-y-4">
+                          <h4 className="font-medium text-gray-900">Feature {num}</h4>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Title
+                            </label>
+                            {editingContent[`feature${num}_title`] !== undefined ? (
+                              <div className="space-y-2">
+                                <input
+                                  type="text"
+                                  value={editingContent[`feature${num}_title`]}
+                                  onChange={(e) => handleContentEdit(`feature${num}_title`, e.target.value)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                                />
+                                <div className="flex space-x-2">
+                                  <button
+                                    onClick={() => saveContent(`feature${num}_title`)}
+                                    disabled={contentSaving[`feature${num}_title`]}
+                                    className="px-3 py-1 bg-primary-600 text-white rounded text-sm hover:bg-primary-700 disabled:opacity-50"
+                                  >
+                                    {contentSaving[`feature${num}_title`] ? 'Saving...' : 'Save'}
+                                  </button>
+                                  <button
+                                    onClick={() => cancelContentEdit(`feature${num}_title`)}
+                                    className="px-3 py-1 bg-gray-300 text-gray-700 rounded text-sm hover:bg-gray-400"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+                                <span className="text-gray-900 text-sm">{content[`feature${num}_title`]}</span>
+                                <button
+                                  onClick={() => handleContentEdit(`feature${num}_title`, content[`feature${num}_title`])}
+                                  className="text-primary-600 hover:text-primary-700 text-xs font-medium"
+                                >
+                                  Edit
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Description
+                            </label>
+                            {editingContent[`feature${num}_description`] !== undefined ? (
+                              <div className="space-y-2">
+                                <textarea
+                                  value={editingContent[`feature${num}_description`]}
+                                  onChange={(e) => handleContentEdit(`feature${num}_description`, e.target.value)}
+                                  rows={3}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                                />
+                                <div className="flex space-x-2">
+                                  <button
+                                    onClick={() => saveContent(`feature${num}_description`)}
+                                    disabled={contentSaving[`feature${num}_description`]}
+                                    className="px-3 py-1 bg-primary-600 text-white rounded text-sm hover:bg-primary-700 disabled:opacity-50"
+                                  >
+                                    {contentSaving[`feature${num}_description`] ? 'Saving...' : 'Save'}
+                                  </button>
+                                  <button
+                                    onClick={() => cancelContentEdit(`feature${num}_description`)}
+                                    className="px-3 py-1 bg-gray-300 text-gray-700 rounded text-sm hover:bg-gray-400"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex items-start justify-between p-2 bg-gray-50 rounded-md">
+                                <span className="text-gray-900 text-sm">{content[`feature${num}_description`]}</span>
+                                <button
+                                  onClick={() => handleContentEdit(`feature${num}_description`, content[`feature${num}_description`])}
+                                  className="text-primary-600 hover:text-primary-700 text-xs font-medium ml-2"
+                                >
+                                  Edit
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-medium text-gray-900">Confirmed</h3>
-                <p className="text-3xl font-bold text-green-600 mt-2">
-                  {bookings.filter(b => b.status === 'confirmed').length}
-                </p>
-              </div>
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-medium text-gray-900">This Month</h3>
-                <p className="text-3xl font-bold text-blue-600 mt-2">
-                  {bookings.filter(b => 
-                    new Date(b.event_date).getMonth() === new Date().getMonth()
-                  ).length}
-                </p>
-              </div>
-            </div>
+            )}
           </div>
         </main>
       </div>

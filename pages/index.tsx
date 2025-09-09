@@ -1,8 +1,11 @@
 import Head from 'next/head'
 import BookingForm from '../src/components/BookingForm'
 import AvailabilityCalendar from '../src/components/AvailabilityCalendar'
+import { useContent } from '../lib/useContent'
 
 export default function HomePage() {
+  const { content } = useContent()
+
   return (
     <>
       <Head>
@@ -42,11 +45,10 @@ export default function HomePage() {
             {/* Hero Section */}
             <div className="text-center mb-12">
               <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                Book Your Perfect Event
+                {content.hero_title}
               </h1>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Reserve our beautiful orangerie for your special occasions, parties, and gatherings. 
-                A stunning venue surrounded by nature.
+                {content.hero_subtitle}
               </p>
             </div>
 
@@ -58,9 +60,9 @@ export default function HomePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Beautiful Venue</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{content.feature1_title}</h3>
                 <p className="text-gray-600">
-                  A stunning glass orangerie perfect for weddings, parties, and corporate events.
+                  {content.feature1_description}
                 </p>
               </div>
               
@@ -70,9 +72,9 @@ export default function HomePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Easy Booking</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{content.feature2_title}</h3>
                 <p className="text-gray-600">
-                  Simple online booking system with real-time availability checking.
+                  {content.feature2_description}
                 </p>
               </div>
               
@@ -82,9 +84,9 @@ export default function HomePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Full Service</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{content.feature3_title}</h3>
                 <p className="text-gray-600">
-                  Complete event support with catering options and event planning assistance.
+                  {content.feature3_description}
                 </p>
               </div>
             </div>
