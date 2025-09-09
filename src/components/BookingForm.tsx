@@ -272,10 +272,10 @@ export default function BookingForm() {
             <div className="flex">
               <div className="ml-3">
                 <p className="text-sm font-medium text-green-800">
-                  Booking request submitted successfully!
+                  Booking confirmed successfully!
                 </p>
                 <p className="mt-1 text-sm text-green-700">
-                  We'll get back to you within 24 hours to confirm your reservation.
+                  Your orangerie reservation is now secured. You'll receive a confirmation email shortly.
                 </p>
               </div>
             </div>

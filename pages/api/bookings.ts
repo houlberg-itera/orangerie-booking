@@ -88,7 +88,7 @@ export default async function handler(
         }
       }
 
-      // Insert the booking into Supabase
+      // Insert the booking into Supabase as confirmed
       const { data, error } = await supabase
         .from('bookings')
         .insert([{
@@ -101,7 +101,7 @@ export default async function handler(
           start_time: booking.start_time,
           end_time: booking.end_time,
           message: booking.message || null,
-          status: 'pending'
+          status: 'confirmed'
         }])
         .select()
 
@@ -114,7 +114,7 @@ export default async function handler(
 
       return res.json({
         success: true,
-        message: 'Booking request submitted successfully',
+        message: 'Booking confirmed successfully! Your orangerie reservation is now secured.',
         bookingId: data[0].id,
         booking: data[0]
       })

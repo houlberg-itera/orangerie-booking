@@ -27,13 +27,63 @@ export default function AdminPage() {
 
   const fetchBookings = async () => {
     try {
-      // We'll need to create a separate admin API endpoint
-      // For now, this is a placeholder
-      setError('Admin functionality requires additional setup. See SETUP-GUIDE.md for details.')
-      setLoading(false)
+      const response = await fetch('/api/admin')
+      if (response.ok) {
+        const data = await response.json()
+        setBookings(data.bookings)
+      } else {
+        setError('Failed to fetch bookings')
+      }
     } catch (err) {
       setError('Failed to fetch bookings')
+    } finally {
       setLoading(false)
+    }
+  }
+
+  const updateBookingStatus = async (id: number, status: string) => {
+    try {
+      const response = await fetch('/api/admin', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id, status }),
+      })
+
+      if (response.ok) {
+        // Refresh bookings
+        fetchBookings()
+      } else {
+        setError('Failed to update booking')
+      }
+    } catch (err) {
+      setError('Failed to update booking')
+    }
+  }
+
+  const deleteBooking = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this booking?')) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      })
+
+      if (response.ok) {
+        // Refresh bookings
+        fetchBookings()
+      } else {
+        setError('Failed to delete booking')
+      }
+    } catch (err) {
+      setError('Failed to delete booking')
     }
   }
 
@@ -194,15 +244,58 @@ export default function AdminPage() {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button className="text-primary-600 hover:text-primary-900 mr-3">
-                              View
-                            </button>
-                            <button className="text-green-600 hover:text-green-900 mr-3">
-                              Approve
-                            </button>
-                            <button className="text-red-600 hover:text-red-900">
-                              Decline
-                            </button>
+                            {booking.status === 'confirmed' ? (
+                              <div className="flex space-x-2">
+                                <button 
+                                  onClick={() => updateBookingStatus(booking.id, 'cancelled')}
+                                  className="text-red-600 hover:text-red-900"
+                                >
+                                  Cancel
+                                </button>
+                                <button 
+                                  onClick={() => deleteBooking(booking.id)}
+                                  className="text-gray-600 hover:text-gray-900"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            ) : booking.status === 'cancelled' ? (
+                              <div className="flex space-x-2">
+                                <button 
+                                  onClick={() => updateBookingStatus(booking.id, 'confirmed')}
+                                  className="text-green-600 hover:text-green-900"
+                                >
+                                  Reactivate
+                                </button>
+                                <button 
+                                  onClick={() => deleteBooking(booking.id)}
+                                  className="text-gray-600 hover:text-gray-900"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex space-x-2">
+                                <button 
+                                  onClick={() => updateBookingStatus(booking.id, 'confirmed')}
+                                  className="text-green-600 hover:text-green-900"
+                                >
+                                  Confirm
+                                </button>
+                                <button 
+                                  onClick={() => updateBookingStatus(booking.id, 'cancelled')}
+                                  className="text-red-600 hover:text-red-900"
+                                >
+                                  Cancel
+                                </button>
+                                <button 
+                                  onClick={() => deleteBooking(booking.id)}
+                                  className="text-gray-600 hover:text-gray-900"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            )}
                           </td>
                         </tr>
                       ))}
