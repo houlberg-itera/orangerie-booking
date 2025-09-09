@@ -5,18 +5,37 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // Add CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end()
+  }
+
+  // Log environment variables status (without exposing them)
+  console.log('Environment check:', {
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Set' : 'Missing',
+    supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Set' : 'Missing'
+  })
+
   if (req.method === 'POST') {
     try {
       const booking: Omit<Booking, 'id' | 'created_at'> = req.body
       
+      console.log('Received booking data:', booking)
+      
       // Basic validation
       if (!booking.name || !booking.email || !booking.event_date || !booking.event_type) {
+        console.log('Validation failed: Missing required fields')
         return res.status(400).json({ error: 'Missing required fields' })
       }
 
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (!emailRegex.test(booking.email)) {
+        console.log('Validation failed: Invalid email format')
         return res.status(400).json({ error: 'Invalid email format' })
       }
 
