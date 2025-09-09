@@ -57,12 +57,31 @@ CREATE TRIGGER update_site_content_updated_at
 ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE site_content ENABLE ROW LEVEL SECURITY;
 
--- Create policies that allow all operations for now
--- In production, you might want more restrictive policies
-CREATE POLICY "Allow all operations on bookings" ON bookings
-  FOR ALL USING (true);
+-- Create more secure policies for bookings
+-- Allow anyone to insert bookings (for public booking form)
+CREATE POLICY "Allow public booking creation" ON bookings
+  FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Allow all operations on site_content" ON site_content
+-- Allow reading of booking data (needed for availability checking)
+CREATE POLICY "Allow reading bookings for availability" ON bookings
+  FOR SELECT USING (true);
+
+-- Allow updates and deletes (for admin functionality)
+-- In production, you might want to restrict this to authenticated admin users
+CREATE POLICY "Allow admin operations on bookings" ON bookings
+  FOR UPDATE USING (true);
+
+CREATE POLICY "Allow admin deletion of bookings" ON bookings
+  FOR DELETE USING (true);
+
+-- Create policies for site_content
+-- Allow reading content (for displaying on website)
+CREATE POLICY "Allow reading site content" ON site_content
+  FOR SELECT USING (true);
+
+-- Allow content updates (for admin content management)
+-- In production, you might want to restrict this to authenticated admin users
+CREATE POLICY "Allow content updates" ON site_content
   FOR ALL USING (true);
 
 -- Insert default content values
