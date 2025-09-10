@@ -27,16 +27,9 @@ export default async function handler(
       console.log('Received booking data:', booking)
       
       // Basic validation
-      if (!booking.name || !booking.email || !booking.event_date || !booking.event_type || !booking.street_name || !booking.street_number) {
+      if (!booking.name || !booking.event_date || !booking.event_type || !booking.street_name || !booking.street_number) {
         console.log('Validation failed: Missing required fields')
         return res.status(400).json({ error: 'Manglende påkrævede felter' })
-      }
-
-      // Validate email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!emailRegex.test(booking.email)) {
-        console.log('Validation failed: Invalid email format')
-        return res.status(400).json({ error: 'Ugyldigt e-mail format' })
       }
 
       // Validate date is in the future
@@ -93,12 +86,12 @@ export default async function handler(
         .from('bookings')
         .insert([{
           name: booking.name,
-          email: booking.email,
+          email: booking.email || null,
           phone: booking.phone || null,
           street_name: booking.street_name,
           street_number: booking.street_number,
           event_type: booking.event_type,
-          guest_count: booking.guest_count,
+          guest_count: booking.guest_count || null,
           event_date: booking.event_date,
           start_time: booking.start_time,
           end_time: booking.end_time,

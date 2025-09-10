@@ -22,12 +22,12 @@ export const supabase = createClient(supabaseUrl, supabaseKey)
 export interface Booking {
   id?: number
   name: string
-  email: string
+  email?: string
   phone?: string
   street_name: string
   street_number: string
   event_type: string
-  guest_count: number
+  guest_count?: number
   event_date: string
   start_time: string
   end_time: string

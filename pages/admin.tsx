@@ -5,12 +5,12 @@ import { useContent } from '../lib/useContent'
 interface Booking {
   id: number
   name: string
-  email: string
+  email?: string
   phone?: string
   street_name?: string
   street_number?: string
   event_type: string
-  guest_count: number
+  guest_count?: number
   event_date: string
   start_time: string
   end_time: string
@@ -289,9 +289,11 @@ export default function AdminPage() {
                               <div className="text-sm font-medium text-gray-900">
                                 {booking.name}
                               </div>
-                              <div className="text-sm text-gray-500">
-                                {booking.email}
-                              </div>
+                              {booking.email && (
+                                <div className="text-sm text-gray-500">
+                                  {booking.email}
+                                </div>
+                              )}
                               {booking.phone && (
                                 <div className="text-sm text-gray-500">
                                   {booking.phone}
@@ -323,7 +325,7 @@ export default function AdminPage() {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {booking.guest_count}
+                            {booking.guest_count || '-'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(booking.status)}`}>

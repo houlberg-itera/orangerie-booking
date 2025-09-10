@@ -4,12 +4,9 @@ import { useState } from 'react'
 
 interface BookingFormData {
   name: string
-  email: string
-  phone: string
   streetName: string
   streetNumber: string
   eventType: string
-  guestCount: number
   eventDate: string
   startTime: string
   endTime: string
@@ -19,12 +16,9 @@ interface BookingFormData {
 export default function BookingForm() {
   const [formData, setFormData] = useState<BookingFormData>({
     name: '',
-    email: '',
-    phone: '',
     streetName: '',
     streetNumber: '',
     eventType: '',
-    guestCount: 1,
     eventDate: '',
     startTime: '',
     endTime: '',
@@ -51,12 +45,9 @@ export default function BookingForm() {
       // Transform form data to match API expectations
       const apiData = {
         name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
         street_name: formData.streetName,
         street_number: formData.streetNumber,
         event_type: formData.eventType,
-        guest_count: formData.guestCount,
         event_date: formData.eventDate,
         start_time: formData.startTime,
         end_time: formData.endTime,
@@ -83,12 +74,9 @@ export default function BookingForm() {
       // Reset form on success
       setFormData({
         name: '',
-        email: '',
-        phone: '',
         streetName: '',
         streetNumber: '',
         eventType: '',
-        guestCount: 1,
         eventDate: '',
         startTime: '',
         endTime: '',
@@ -106,52 +94,19 @@ export default function BookingForm() {
     <div className="card p-6">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Contact Information */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="name" className="form-label">
-              Fulde Navn *
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              required
-              className="form-input"
-              placeholder="Dit fulde navn"
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="email" className="form-label">
-              E-mail Adresse *
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-              className="form-input"
-              placeholder="din@email.dk"
-            />
-          </div>
-        </div>
-
         <div>
-          <label htmlFor="phone" className="form-label">
-            Telefonnummer
+          <label htmlFor="name" className="form-label">
+            Fulde Navn *
           </label>
           <input
-            type="tel"
-            id="phone"
-            name="phone"
-            value={formData.phone}
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name}
             onChange={handleInputChange}
+            required
             className="form-input"
-            placeholder="+45 12 34 56 78"
+            placeholder="Dit fulde navn"
           />
         </div>
 
@@ -191,46 +146,26 @@ export default function BookingForm() {
         </div>
 
         {/* Event Details */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="eventType" className="form-label">
-              Arrangementtype *
-            </label>
-            <select
-              id="eventType"
-              name="eventType"
-              value={formData.eventType}
-              onChange={handleInputChange}
-              required
-              className="form-input"
-            >
-              <option value="">Vælg arrangementtype</option>
-              <option value="wedding">Bryllup</option>
-              <option value="birthday">Fødselsdagsfest</option>
-              <option value="anniversary">Jubilæum</option>
-              <option value="corporate">Firmaarrangement</option>
-              <option value="meeting">Møde</option>
-              <option value="other">Andet</option>
-            </select>
-          </div>
-          
-          <div>
-            <label htmlFor="guestCount" className="form-label">
-              Antal Gæster *
-            </label>
-            <input
-              type="number"
-              id="guestCount"
-              name="guestCount"
-              value={formData.guestCount}
-              onChange={handleInputChange}
-              required
-              min="1"
-              max="100"
-              className="form-input"
-              placeholder="10"
-            />
-          </div>
+        <div>
+          <label htmlFor="eventType" className="form-label">
+            Arrangementtype *
+          </label>
+          <select
+            id="eventType"
+            name="eventType"
+            value={formData.eventType}
+            onChange={handleInputChange}
+            required
+            className="form-input"
+          >
+            <option value="">Vælg arrangementtype</option>
+            <option value="wedding">Bryllup</option>
+            <option value="birthday">Fødselsdagsfest</option>
+            <option value="anniversary">Jubilæum</option>
+            <option value="corporate">Firmaarrangement</option>
+            <option value="meeting">Møde</option>
+            <option value="other">Andet</option>
+          </select>
         </div>
 
         {/* Date and Time */}
