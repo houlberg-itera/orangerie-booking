@@ -24,6 +24,8 @@ export interface Booking {
   name: string
   email: string
   phone?: string
+  street_name: string
+  street_number: string
   event_type: string
   guest_count: number
   event_date: string

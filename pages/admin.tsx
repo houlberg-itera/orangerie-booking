@@ -7,6 +7,8 @@ interface Booking {
   name: string
   email: string
   phone?: string
+  street_name?: string
+  street_number?: string
   event_type: string
   guest_count: number
   event_date: string
@@ -37,10 +39,10 @@ export default function AdminPage() {
         const data = await response.json()
         setBookings(data.bookings)
       } else {
-        setError('Failed to fetch bookings')
+        setError('Fejl ved hentning af bookinger')
       }
     } catch (err) {
-      setError('Failed to fetch bookings')
+      setError('Fejl ved hentning af bookinger')
     } finally {
       setLoading(false)
     }
@@ -60,15 +62,15 @@ export default function AdminPage() {
         // Refresh bookings
         fetchBookings()
       } else {
-        setError('Failed to update booking')
+        setError('Fejl ved opdatering af booking')
       }
     } catch (err) {
-      setError('Failed to update booking')
+      setError('Fejl ved opdatering af booking')
     }
   }
 
   const deleteBooking = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this booking?')) {
+    if (!confirm('Er du sikker på, at du vil slette denne booking?')) {
       return
     }
 
@@ -85,15 +87,15 @@ export default function AdminPage() {
         // Refresh bookings
         fetchBookings()
       } else {
-        setError('Failed to delete booking')
+        setError('Fejl ved sletning af booking')
       }
     } catch (err) {
-      setError('Failed to delete booking')
+      setError('Fejl ved sletning af booking')
     }
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('da-DK', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -128,7 +130,7 @@ export default function AdminPage() {
         return newState
       })
     } else {
-      setError('Failed to update content')
+      setError('Fejl ved opdatering af indhold')
     }
     
     setContentSaving(prev => ({ ...prev, [key]: false }))
@@ -145,7 +147,7 @@ export default function AdminPage() {
   return (
     <>
       <Head>
-        <title>Admin - Orangerie Bookings</title>
+        <title>Admin - Orangeri Bookinger</title>
         <meta name="robots" content="noindex, nofollow" />
       </Head>
 
@@ -154,11 +156,11 @@ export default function AdminPage() {
           <div className="container max-w-7xl mx-auto py-4">
             <div className="flex items-center justify-between">
               <h1 className="text-2xl font-bold text-gray-900">
-                Orangerie Booking Admin
+                Orangeri Booking Admin
               </h1>
               <nav className="flex space-x-4">
                 <a href="/" className="text-gray-700 hover:text-primary-600 transition-colors">
-                  ← Back to Site
+                  ← Tilbage til Hjemmeside
                 </a>
               </nav>
             </div>
@@ -179,7 +181,7 @@ export default function AdminPage() {
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                   >
-                    Bookings Management
+                    Booking Administration
                   </button>
                   <button
                     onClick={() => setActiveTab('content')}
@@ -189,7 +191,7 @@ export default function AdminPage() {
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                   >
-                    Content Management
+                    Indholds Administration
                   </button>
                 </nav>
               </div>
@@ -212,13 +214,13 @@ export default function AdminPage() {
             {activeTab === 'bookings' && (
               <div className="bg-white rounded-lg shadow p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                  Recent Bookings
+                  Seneste Bookinger
                 </h2>
 
                 {loading && (
                   <div className="text-center py-8">
                     <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-                    <p className="mt-2 text-gray-600">Loading bookings...</p>
+                    <p className="mt-2 text-gray-600">Indlæser bookinger...</p>
                   </div>
                 )}
 
@@ -227,20 +229,20 @@ export default function AdminPage() {
                   <div className="flex">
                     <div className="ml-3">
                       <h3 className="text-sm font-medium text-yellow-800">
-                        Admin Setup Required
+                        Admin Opsætning Påkrævet
                       </h3>
                       <div className="mt-2 text-sm text-yellow-700">
                         <p>{error}</p>
                         <p className="mt-2">
-                          To enable full admin functionality, you'll need to:
+                          For at aktivere fuld admin funktionalitet skal du:
                         </p>
                         <ul className="mt-2 list-disc list-inside">
-                          <li>Add authentication (NextAuth.js or Supabase Auth)</li>
-                          <li>Create admin API endpoints</li>
-                          <li>Set up proper permissions</li>
+                          <li>Tilføje autentificering (NextAuth.js eller Supabase Auth)</li>
+                          <li>Oprette admin API endpoints</li>
+                          <li>Opsætte korrekte tilladelser</li>
                         </ul>
                         <p className="mt-2">
-                          For now, you can view bookings directly in your Supabase dashboard.
+                          Foreløbig kan du se bookinger direkte i dit Supabase dashboard.
                         </p>
                       </div>
                     </div>
@@ -250,7 +252,7 @@ export default function AdminPage() {
 
               {!loading && !error && bookings.length === 0 && (
                 <div className="text-center py-8">
-                  <p className="text-gray-500">No bookings found.</p>
+                  <p className="text-gray-500">Ingen bookinger fundet.</p>
                 </div>
               )}
 
@@ -260,22 +262,22 @@ export default function AdminPage() {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Guest
+                          Gæst
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Event
+                          Arrangement
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Date & Time
+                          Dato & Tid
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Guests
+                          Gæster
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Status
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
+                          Handlinger
                         </th>
                       </tr>
                     </thead>
@@ -293,6 +295,11 @@ export default function AdminPage() {
                               {booking.phone && (
                                 <div className="text-sm text-gray-500">
                                   {booking.phone}
+                                </div>
+                              )}
+                              {(booking.street_name && booking.street_number) && (
+                                <div className="text-sm text-gray-500">
+                                  {booking.street_name} {booking.street_number}
                                 </div>
                               )}
                             </div>
@@ -330,13 +337,13 @@ export default function AdminPage() {
                                   onClick={() => updateBookingStatus(booking.id, 'cancelled')}
                                   className="text-red-600 hover:text-red-900"
                                 >
-                                  Cancel
+                                  Aflys
                                 </button>
                                 <button 
                                   onClick={() => deleteBooking(booking.id)}
                                   className="text-gray-600 hover:text-gray-900"
                                 >
-                                  Delete
+                                  Slet
                                 </button>
                               </div>
                             ) : booking.status === 'cancelled' ? (
@@ -345,13 +352,13 @@ export default function AdminPage() {
                                   onClick={() => updateBookingStatus(booking.id, 'confirmed')}
                                   className="text-green-600 hover:text-green-900"
                                 >
-                                  Reactivate
+                                  Genaktivér
                                 </button>
                                 <button 
                                   onClick={() => deleteBooking(booking.id)}
                                   className="text-gray-600 hover:text-gray-900"
                                 >
-                                  Delete
+                                  Slet
                                 </button>
                               </div>
                             ) : (
@@ -360,19 +367,19 @@ export default function AdminPage() {
                                   onClick={() => updateBookingStatus(booking.id, 'confirmed')}
                                   className="text-green-600 hover:text-green-900"
                                 >
-                                  Confirm
+                                  Bekræft
                                 </button>
                                 <button 
                                   onClick={() => updateBookingStatus(booking.id, 'cancelled')}
                                   className="text-red-600 hover:text-red-900"
                                 >
-                                  Cancel
+                                  Aflys
                                 </button>
                                 <button 
                                   onClick={() => deleteBooking(booking.id)}
                                   className="text-gray-600 hover:text-gray-900"
                                 >
-                                  Delete
+                                  Slet
                                 </button>
                               </div>
                             )}
@@ -387,25 +394,25 @@ export default function AdminPage() {
                 {/* Quick Stats for Bookings */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
                   <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="text-lg font-medium text-gray-900">Total Bookings</h3>
+                    <h3 className="text-lg font-medium text-gray-900">Samlede Bookinger</h3>
                     <p className="text-3xl font-bold text-primary-600 mt-2">
                       {bookings.length}
                     </p>
                   </div>
                   <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="text-lg font-medium text-gray-900">Pending</h3>
+                    <h3 className="text-lg font-medium text-gray-900">Afventer</h3>
                     <p className="text-3xl font-bold text-yellow-600 mt-2">
                       {bookings.filter(b => b.status === 'pending').length}
                     </p>
                   </div>
                   <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="text-lg font-medium text-gray-900">Confirmed</h3>
+                    <h3 className="text-lg font-medium text-gray-900">Bekræftet</h3>
                     <p className="text-3xl font-bold text-green-600 mt-2">
                       {bookings.filter(b => b.status === 'confirmed').length}
                     </p>
                   </div>
                   <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="text-lg font-medium text-gray-900">This Month</h3>
+                    <h3 className="text-lg font-medium text-gray-900">Denne Måned</h3>
                     <p className="text-3xl font-bold text-blue-600 mt-2">
                       {bookings.filter(b => 
                         new Date(b.event_date).getMonth() === new Date().getMonth()
@@ -420,20 +427,20 @@ export default function AdminPage() {
             {activeTab === 'content' && (
               <div className="bg-white rounded-lg shadow p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                  Content Management
+                  Indholds Administration
                 </h2>
                 <p className="text-gray-600 mb-6">
-                  Edit the text content that appears on your homepage. Changes will be visible immediately after saving.
+                  Rediger tekstindholdet, der vises på din hjemmeside. Ændringer vil være synlige med det samme efter gemning.
                 </p>
 
                 <div className="space-y-6">
                   {/* Hero Section */}
                   <div className="border-b border-gray-200 pb-6">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Hero Section</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Hero Sektion</h3>
                     <div className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Main Title
+                          Hovedtitel
                         </label>
                         {editingContent.hero_title !== undefined ? (
                           <div className="flex space-x-2">

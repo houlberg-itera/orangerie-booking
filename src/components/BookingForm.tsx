@@ -6,6 +6,8 @@ interface BookingFormData {
   name: string
   email: string
   phone: string
+  streetName: string
+  streetNumber: string
   eventType: string
   guestCount: number
   eventDate: string
@@ -19,6 +21,8 @@ export default function BookingForm() {
     name: '',
     email: '',
     phone: '',
+    streetName: '',
+    streetNumber: '',
     eventType: '',
     guestCount: 1,
     eventDate: '',
@@ -49,6 +53,8 @@ export default function BookingForm() {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
+        street_name: formData.streetName,
+        street_number: formData.streetNumber,
         event_type: formData.eventType,
         guest_count: formData.guestCount,
         event_date: formData.eventDate,
@@ -79,6 +85,8 @@ export default function BookingForm() {
         name: '',
         email: '',
         phone: '',
+        streetName: '',
+        streetNumber: '',
         eventType: '',
         guestCount: 1,
         eventDate: '',
@@ -101,7 +109,7 @@ export default function BookingForm() {
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="name" className="form-label">
-              Full Name *
+              Fulde Navn *
             </label>
             <input
               type="text"
@@ -111,13 +119,13 @@ export default function BookingForm() {
               onChange={handleInputChange}
               required
               className="form-input"
-              placeholder="Your full name"
+              placeholder="Dit fulde navn"
             />
           </div>
           
           <div>
             <label htmlFor="email" className="form-label">
-              Email Address *
+              E-mail Adresse *
             </label>
             <input
               type="email"
@@ -127,14 +135,14 @@ export default function BookingForm() {
               onChange={handleInputChange}
               required
               className="form-input"
-              placeholder="your@email.com"
+              placeholder="din@email.dk"
             />
           </div>
         </div>
 
         <div>
           <label htmlFor="phone" className="form-label">
-            Phone Number
+            Telefonnummer
           </label>
           <input
             type="tel"
@@ -143,15 +151,50 @@ export default function BookingForm() {
             value={formData.phone}
             onChange={handleInputChange}
             className="form-input"
-            placeholder="+1 (555) 123-4567"
+            placeholder="+45 12 34 56 78"
           />
+        </div>
+
+        {/* Address Information */}
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="md:col-span-2">
+            <label htmlFor="streetName" className="form-label">
+              Gadenavn *
+            </label>
+            <input
+              type="text"
+              id="streetName"
+              name="streetName"
+              value={formData.streetName}
+              onChange={handleInputChange}
+              required
+              className="form-input"
+              placeholder="Hovedgade"
+            />
+          </div>
+          
+          <div>
+            <label htmlFor="streetNumber" className="form-label">
+              Husnummer *
+            </label>
+            <input
+              type="text"
+              id="streetNumber"
+              name="streetNumber"
+              value={formData.streetNumber}
+              onChange={handleInputChange}
+              required
+              className="form-input"
+              placeholder="123A"
+            />
+          </div>
         </div>
 
         {/* Event Details */}
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="eventType" className="form-label">
-              Event Type *
+              Arrangementtype *
             </label>
             <select
               id="eventType"
@@ -161,19 +204,19 @@ export default function BookingForm() {
               required
               className="form-input"
             >
-              <option value="">Select event type</option>
-              <option value="wedding">Wedding</option>
-              <option value="birthday">Birthday Party</option>
-              <option value="anniversary">Anniversary</option>
-              <option value="corporate">Corporate Event</option>
-              <option value="meeting">Meeting</option>
-              <option value="other">Other</option>
+              <option value="">Vælg arrangementtype</option>
+              <option value="wedding">Bryllup</option>
+              <option value="birthday">Fødselsdagsfest</option>
+              <option value="anniversary">Jubilæum</option>
+              <option value="corporate">Firmaarrangement</option>
+              <option value="meeting">Møde</option>
+              <option value="other">Andet</option>
             </select>
           </div>
           
           <div>
             <label htmlFor="guestCount" className="form-label">
-              Number of Guests *
+              Antal Gæster *
             </label>
             <input
               type="number"
@@ -193,7 +236,7 @@ export default function BookingForm() {
         {/* Date and Time */}
         <div>
           <label htmlFor="eventDate" className="form-label">
-            Event Date *
+            Arrangementsdato *
           </label>
           <input
             type="date"
@@ -210,7 +253,7 @@ export default function BookingForm() {
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="startTime" className="form-label">
-              Start Time *
+              Starttidspunkt *
             </label>
             <input
               type="time"
@@ -225,7 +268,7 @@ export default function BookingForm() {
           
           <div>
             <label htmlFor="endTime" className="form-label">
-              End Time *
+              Sluttidspunkt *
             </label>
             <input
               type="time"
@@ -242,7 +285,7 @@ export default function BookingForm() {
         {/* Additional Information */}
         <div>
           <label htmlFor="message" className="form-label">
-            Additional Information
+            Yderligere Oplysninger
           </label>
           <textarea
             id="message"
@@ -251,7 +294,7 @@ export default function BookingForm() {
             onChange={handleInputChange}
             rows={4}
             className="form-input"
-            placeholder="Any special requirements or additional information..."
+            placeholder="Særlige ønsker eller yderligere information..."
           />
         </div>
 
@@ -262,7 +305,7 @@ export default function BookingForm() {
             disabled={isSubmitting}
             className={`w-full btn-primary ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Booking Request'}
+            {isSubmitting ? 'Sender...' : 'Send Bookingforespørgsel'}
           </button>
         </div>
 
@@ -272,10 +315,10 @@ export default function BookingForm() {
             <div className="flex">
               <div className="ml-3">
                 <p className="text-sm font-medium text-green-800">
-                  Booking confirmed successfully!
+                  Booking bekræftet med succes!
                 </p>
                 <p className="mt-1 text-sm text-green-700">
-                  Your orangerie reservation is now secured. You'll receive a confirmation email shortly.
+                  Din orangeri-reservation er nu sikret. Du vil modtage en bekræftelsesmail snart.
                 </p>
               </div>
             </div>
@@ -287,10 +330,10 @@ export default function BookingForm() {
             <div className="flex">
               <div className="ml-3">
                 <p className="text-sm font-medium text-red-800">
-                  Error submitting booking request
+                  Fejl ved indgivelse af bookingforespørgsel
                 </p>
                 <p className="mt-1 text-sm text-red-700">
-                  Please try again or contact us directly.
+                  Prøv venligst igen eller kontakt os direkte.
                 </p>
               </div>
             </div>

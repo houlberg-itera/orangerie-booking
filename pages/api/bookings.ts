@@ -27,16 +27,16 @@ export default async function handler(
       console.log('Received booking data:', booking)
       
       // Basic validation
-      if (!booking.name || !booking.email || !booking.event_date || !booking.event_type) {
+      if (!booking.name || !booking.email || !booking.event_date || !booking.event_type || !booking.street_name || !booking.street_number) {
         console.log('Validation failed: Missing required fields')
-        return res.status(400).json({ error: 'Missing required fields' })
+        return res.status(400).json({ error: 'Manglende påkrævede felter' })
       }
 
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (!emailRegex.test(booking.email)) {
         console.log('Validation failed: Invalid email format')
-        return res.status(400).json({ error: 'Invalid email format' })
+        return res.status(400).json({ error: 'Ugyldigt e-mail format' })
       }
 
       // Validate date is in the future
@@ -45,7 +45,7 @@ export default async function handler(
       today.setHours(0, 0, 0, 0)
       
       if (eventDate < today) {
-        return res.status(400).json({ error: 'Event date must be in the future' })
+        return res.status(400).json({ error: 'Arrangementsdato skal være i fremtiden' })
       }
 
       // Check for existing bookings on the same date
@@ -57,7 +57,7 @@ export default async function handler(
 
       if (checkError) {
         console.error('Error checking existing bookings:', checkError)
-        return res.status(500).json({ error: 'Error checking availability' })
+        return res.status(500).json({ error: 'Fejl ved kontrol af tilgængelighed' })
       }
 
       // Check for time conflicts
@@ -76,7 +76,7 @@ export default async function handler(
         
         if (conflictingBookings.length > 0) {
           return res.status(409).json({ 
-            error: 'Time slot conflicts with existing booking',
+            error: 'Tidspunkt konflikter med eksisterende booking',
             conflictingBookings: conflictingBookings.map(b => ({
               date: b.event_date,
               time: `${b.start_time}-${b.end_time}`,
@@ -95,6 +95,8 @@ export default async function handler(
           name: booking.name,
           email: booking.email,
           phone: booking.phone || null,
+          street_name: booking.street_name,
+          street_number: booking.street_number,
           event_type: booking.event_type,
           guest_count: booking.guest_count,
           event_date: booking.event_date,
@@ -107,21 +109,21 @@ export default async function handler(
 
       if (error) {
         console.error('Supabase error:', error)
-        return res.status(500).json({ error: 'Failed to save booking' })
+        return res.status(500).json({ error: 'Fejl ved gemning af booking' })
       }
 
       console.log('New booking created:', data[0])
 
       return res.json({
         success: true,
-        message: 'Booking confirmed successfully! Your orangerie reservation is now secured.',
+        message: 'Booking bekræftet med succes! Din orangeri-reservation er nu sikret.',
         bookingId: data[0].id,
         booking: data[0]
       })
 
     } catch (error) {
       console.error('Booking submission error:', error)
-      return res.status(500).json({ error: 'Internal server error' })
+      return res.status(500).json({ error: 'Intern serverfejl' })
     }
   }
 
@@ -137,7 +139,7 @@ export default async function handler(
 
       if (error) {
         console.error('Error fetching bookings:', error)
-        return res.status(500).json({ error: 'Failed to fetch bookings' })
+        return res.status(500).json({ error: 'Fejl ved hentning af bookinger' })
       }
 
       return res.json({
@@ -145,7 +147,7 @@ export default async function handler(
       })
     } catch (error) {
       console.error('Error in GET handler:', error)
-      return res.status(500).json({ error: 'Internal server error' })
+      return res.status(500).json({ error: 'Intern serverfejl' })
     }
   }
 
